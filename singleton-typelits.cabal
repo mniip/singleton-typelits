@@ -1,5 +1,5 @@
 name:                singleton-typelits
-version:             0.0.0.1
+version:             0.1.0.0
 synopsis:            Singletons and induction over GHC TypeLits
 description:
   Singletons and induction schemes over 'GHC.TypeLits.Nat'.

@@ -106,14 +106,14 @@ instance NatSingleton NatTwosComp where
 --
 -- > BaseCompxBp1p (natSingleton :: p 2) (BaseCompxBp1p (natSingleton :: p 1) (BaseCompxBp1p (natSingleton :: p 0) BaseCompZero)) :: NatBaseComp p 10 123
 data NatBaseComp (p :: Nat -> *) (b :: Nat) (n :: Nat) where
-	BaseCompZero :: NatBaseComp p b 0
-	BaseCompxBp1p :: (KnownNat k, 1 + k <= b, KnownNat n) => p k -> NatBaseComp p b n -> NatBaseComp p b (1 + k + b * n)
+	BaseCompZero :: (KnownNat b, b ~ (1 + c)) => NatBaseComp p b 0
+	BaseCompxBp1p :: (KnownNat b, b ~ (1 + c), KnownNat k, 1 + k <= b, KnownNat n) => p k -> NatBaseComp p b n -> NatBaseComp p b (1 + k + b * n)
 instance ShowN p => Show (NatBaseComp p b n) where
 	showsPrec d BaseCompZero = showString "BaseCompZero"
 	showsPrec d (BaseCompxBp1p a b) = showParen (d > 10) $ showString "BaseCompxBp1p " . showsPrecN 11 a . showString " " . showsPrec 11 b
 instance ShowN p => ShowN (NatBaseComp p b) where showsPrecN = showsPrec
 
-instance (KnownNat b, NatSingleton p) => NatSingleton (NatBaseComp p b) where
+instance (KnownNat b, b ~ (1 + c), NatSingleton p) => NatSingleton (NatBaseComp p b) where
 	natSingleton :: forall n. KnownNat n => NatBaseComp p b n
 	natSingleton = case natVal (Proxy :: Proxy n) of
 		0 -> (unsafeCoerce :: NatBaseComp p b 0 -> NatBaseComp p b n) BaseCompZero
@@ -188,7 +188,7 @@ instance ShowN p => Show (PosBase p b n) where
 	showsPrec d (BaseDigit a b) = showParen (d > 10) $ showString "BaseDigit " . showsPrecN 11 a . showString " " . showsPrec 11 b
 instance ShowN p => ShowN (PosBase p b) where showsPrecN = showsPrec
 
-instance (KnownNat b, NatSingleton p) => PositiveSingleton (PosBase p b) where
+instance (KnownNat b, b ~ (2 + c), NatSingleton p) => PositiveSingleton (PosBase p b) where
 	posSingleton :: forall n. KnownNat n => PosBase p b (1 + n)
 	posSingleton = case natVal (Proxy :: Proxy n) of
 		n | n < base - 1 -> case someNatVal (n + 1) of

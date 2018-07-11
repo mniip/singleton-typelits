@@ -38,6 +38,7 @@ induceIsZero = go natSingleton
 		go IsNonZero y z = y
 
 -- | \((\forall n. P(n) \to P(n + 1)) \to P(0) \to \forall m. P(m)\)
+--
 -- For example:
 --
 -- > inducePeano f z :: p 3 = f (f (f z))
@@ -49,6 +50,7 @@ inducePeano = go natSingleton
 		go (PeanoSucc n) f z = f (go n f z)
 
 -- | \((\forall n. P(n) \to P(2n + 1)) \to \\ (\forall n. P(n) \to P(2n + 2)) \to \\ P(0) \to \\ \forall m. P(m)\)
+--
 -- For example:
 --
 -- > induceTwosComp f1 f2 z :: p 12 = f2 (f1 (f2 z))
@@ -61,17 +63,21 @@ induceTwosComp = go natSingleton
 		go (TwosCompx2p2 n) f g z = g (go n f g z)
 
 -- | \(\forall b. (\prod_d Q(d)) \to \\ (\forall n. \forall d. d < b \to Q(d) \to P(n) \to P(bn + d + 1)) \to \\ \forall m. P(m)\)
+--
 -- For example:
 --
--- > induceBaseComp (_ :: r 10) d f z :: p 123 = (d :: q 2) `f` ((d :: q 1) `f` ((d :: q 0) `f` z)
-induceBaseComp :: forall r b q p m. (KnownNat b, KnownNat m) => r b -> (forall m. KnownNat m => q m) -> (forall k n. (KnownNat b, 1 + k <= b, KnownNat n) => q k -> p n -> p (1 + k + b * n)) -> p 0 -> p m
-induceBaseComp _ = go natSingleton
+-- > induceBaseComp (_ :: s q) (_ :: r 10) d f z :: p 123 = (d :: q 2) `f` ((d :: q 1) `f` ((d :: q 0) `f` z)
+--
+-- The @s q@ parameter is necessary because presently GHC is unable to unify @q@ under the equational constraint @1 + k <= b@.
+induceBaseComp :: forall r b q p m c s. (KnownNat b, b ~ (1 + c), KnownNat m) => s q -> r b -> (forall k. (KnownNat k, 1 + k <= b) => q k) -> (forall k n. (KnownNat k, 1 + k <= b, KnownNat n) => q k -> p n -> p (1 + k + b * n)) -> p 0 -> p m
+induceBaseComp _ _ = go natSingleton
 	where
-		go :: forall m. NatBaseComp Proxy b m -> (forall m. (KnownNat m, 1 + m <= b) => q m) -> (forall k n. (KnownNat b, 1 + k <= b, KnownNat n) => q k -> p n -> p (1 + k + b * n)) -> p 0 -> p m
+		go :: forall m. NatBaseComp Proxy b m -> (forall k. (KnownNat k, 1 + k <= b) => q k) -> (forall k n. (KnownNat k, 1 + k <= b, KnownNat n) => q k -> p n -> p (1 + k + b * n)) -> p 0 -> p m
 		go BaseCompZero q f z = z
 		go (BaseCompxBp1p k n) q f z = f q (go n q f z)
 
 -- | \((\forall n. P(n) \to P(n + 1)) \to P(1) \to \forall m > 0. P(m)\)
+--
 -- For example:
 --
 -- > induceUnary f o :: p 5 = f (f (f (f o)))
@@ -83,6 +89,7 @@ induceUnary = go posSingleton
 		go (UnarySucc n) f o = f (go n f o)
 
 -- | \((\forall n. P(n) \to P(2n)) \to \\ (\forall n. P(n) \to P(2n + 1)) \to \\ P(1) \to \\ \forall m > 0. P(m)\)
+--
 -- For example:
 --
 -- > inducePosBinary f0 f1 o :: p 10 = f0 (f1 (f0 o))
@@ -95,12 +102,15 @@ inducePosBinary = go posSingleton
 		go (Bin1 n) f g z = g (go n f g z)
 
 -- | \(\forall b. (\prod_d Q(d)) \to \\ (\forall n. \forall d. d < b \to Q(d) \to P(n) \to P(bn + d)) \to \\ (\forall d. d > 0 \to d < b \to Q(d) \to P(d)) \to \\ \forall m > 0. P (m)\)
+--
 -- For example:
 --
--- > inducePosBase (_ :: r 10) d f l :: p 123 = (d :: q 3) `f` ((d :: q 2) `f` l (d :: q 1))
-inducePosBase :: forall r b q p m. (KnownNat b, KnownNat m) => r b -> (forall m. KnownNat m => q m) -> (forall k n. (KnownNat b, 1 + k <= b, KnownNat n) => q k -> p n -> p (k + b * n)) -> (forall k n. (KnownNat k, 1 + k <= b, k ~ (1 + n)) => q k -> p k) -> p (1 + m)
-inducePosBase _ = go posSingleton
+-- > inducePosBase (_ :: s q) (_ :: r 10) d f l :: p 123 = (d :: q 3) `f` ((d :: q 2) `f` l (d :: q 1))
+--
+-- The @s q@ parameter is necessary because presently GHC is unable to unify @q@ under the equational constraint @1 + k <= b@.
+inducePosBase :: forall r b q p m c s. (KnownNat b, b ~ (2 + c), KnownNat m) => s q -> r b -> (forall k. (KnownNat k, 1 + k <= b) => q k) -> (forall k n. (KnownNat k, 1 + k <= b, KnownNat n) => q k -> p n -> p (k + b * n)) -> (forall k n. (KnownNat k, 1 + k <= b, k ~ (1 + n)) => q k -> p k) -> p (1 + m)
+inducePosBase _ _ = go posSingleton
 	where
-		go :: forall m. PosBase Proxy b m  -> (forall m. KnownNat m => q m) -> (forall k n. (KnownNat b, 1 + k <= b, KnownNat n) => q k -> p n -> p (k + b * n)) -> (forall k n. (KnownNat k, 1 + k <= b, k ~ (1 + n)) => q k -> p k) -> p m
+		go :: forall m. PosBase Proxy b m  -> (forall k. (KnownNat k, 1 + k <= b) => q k) -> (forall k n. (KnownNat k, 1 + k <= b, KnownNat n) => q k -> p n -> p (k + b * n)) -> (forall k n. (KnownNat k, 1 + k <= b, k ~ (1 + n)) => q k -> p k) -> p m
 		go (BaseLead n) q f g = g q
 		go (BaseDigit k n) q f g = f q (go n q f g)
