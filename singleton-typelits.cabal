@@ -1,5 +1,5 @@
 name:                singleton-typelits
-version:             0.0.0.0
+version:             0.0.0.1
 synopsis:            Singletons and induction over GHC TypeLits
 description:         Singletons and induction schemes over 'GHC.TypeLits.Nat'
 homepage:            https://github.com/mniip/singleton-typelits
@@ -13,5 +13,5 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     GHC.TypeLits.Singletons, GHC.TypeLits.Induction
-  build-depends:       base >=4.9 && <4.11
+  build-depends:       base >=4.9 && <4.12
   default-language:    Haskell2010

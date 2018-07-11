@@ -1,12 +1,13 @@
 -- |
 -- Module      : GHC.TypeLits.Singletons
 -- Description : Singletons for GHC TypeLits
--- Copyright   : (C) 2017 mniip
+-- Copyright   : (C) 2017-2018 mniip
 -- License     : MIT
 -- Maintainer  : mniip@mniip.com
--- Stability   : experimental
+-- Stability   : stable
 -- Portability : portable
 {-# LANGUAGE TypeOperators, KindSignatures, DataKinds, PolyKinds, GADTs, RankNTypes, StandaloneDeriving, InstanceSigs, ScopedTypeVariables #-}
+{-# LANGUAGE Trustworthy #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module GHC.TypeLits.Singletons

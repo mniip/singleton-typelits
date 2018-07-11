@@ -1,12 +1,13 @@
 -- |
 -- Module      : GHC.TypeLits.Induction
 -- Description : Induction for GHC TypeLits
--- Copyright   : (C) 2017 mniip
+-- Copyright   : (C) 2017-2018 mniip
 -- License     : MIT
 -- Maintainer  : mniip@mniip.com
--- Stability   : experimental
+-- Stability   : stable
 -- Portability : portable
 {-# LANGUAGE TypeOperators, KindSignatures, DataKinds, PolyKinds, GADTs, RankNTypes, StandaloneDeriving, InstanceSigs, ScopedTypeVariables #-}
+{-# LANGUAGE Safe #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module GHC.TypeLits.Induction
