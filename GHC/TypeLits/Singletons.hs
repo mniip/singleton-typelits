@@ -62,6 +62,10 @@ instance NatSingleton NatIsZero where
 			Nothing -> error $ "Malformed KnownNat instance: " ++ show n
 
 -- | A natural number is either 0 or a successor of another natural number.
+--
+-- For example, @3 = 1 + (1 + (1 + 0))@:
+--
+-- > PeanoSucc (PeanoSucc (PeanoSucc PeanoZero)) :: NatPeano 3
 data NatPeano (n :: Nat) where
 	PeanoZero :: NatPeano 0
 	PeanoSucc :: KnownNat n => NatPeano n -> NatPeano (1 + n)
@@ -75,6 +79,10 @@ instance NatSingleton NatPeano where
 		IsNonZero -> PeanoSucc natSingleton
 
 -- | A natural number is either 0, or twice another natural number plus 1 or 2.
+--
+-- For example, @12 = 2 + 2 * (1 + 2 * (2 + 2 * 0))@:
+--
+-- > TwosCompx2p2 (TwosCompx2p1 (TwosCompx2p2 TwosCompZero)) :: NatTwosComp 12
 data NatTwosComp (n :: Nat) where
 	TwosCompZero :: NatTwosComp 0
 	TwosCompx2p1 :: KnownNat n => NatTwosComp n -> NatTwosComp (1 + 2 * n)
@@ -93,6 +101,10 @@ instance NatSingleton NatTwosComp where
 			Nothing -> error $ "Malformed KnownNat instance: " ++ show n
 
 -- | A natural number is either 0, or @b@ times another natural number plus a digit in @[1, b]@.
+--
+-- For example, @123 = (2 + 1) + 10 * ((1 + 1) + 10 * ((0 + 1) + 10 * 0))@:
+--
+-- > BaseCompxBp1p (natSingleton :: p 2) (BaseCompxBp1p (natSingleton :: p 1) (BaseCompxBp1p (natSingleton :: p 0) BaseCompZero)) :: NatBaseComp p 10 123
 data NatBaseComp (p :: Nat -> *) (b :: Nat) (n :: Nat) where
 	BaseCompZero :: NatBaseComp p b 0
 	BaseCompxBp1p :: (KnownNat k, 1 + k <= b, KnownNat n) => p k -> NatBaseComp p b n -> NatBaseComp p b (1 + k + b * n)
@@ -122,6 +134,10 @@ instance PositiveSingleton Proxy where
 	posSingleton = Proxy
 
 -- | A positive number is either 1 or a successor of another positive number.
+--
+-- For example, @5 = 1 + (1 + (1 + (1 + 1)))@:
+--
+-- > UnarySucc (UnarySucc (UnarySucc (UnarySucc UnaryOne))) :: Unary 5
 data Unary (n :: Nat) where
 	UnaryOne :: Unary 1
 	UnarySucc :: KnownNat n => Unary n -> Unary (1 + n)
@@ -135,6 +151,10 @@ instance PositiveSingleton Unary where
 		IsNonZero -> UnarySucc posSingleton
 
 -- | A positive number is either 1, or twice another positive number plus 0 or 1.
+--
+-- For example, @10 = 0 + 2 * (1 + 2 * (0 + 2 * 1))@:
+--
+-- > Bin0 (Bin1 (Bin0 BinOne)) :: PosBinary 10
 data PosBinary (n :: Nat) where
 	BinOne :: PosBinary 1
 	Bin0 :: KnownNat n => PosBinary n -> PosBinary (2 * n)
@@ -156,6 +176,10 @@ instance PositiveSingleton PosBinary where
 			Nothing -> error $ "Malformed KnownNat instance: " ++ show n
 
 -- | A positive number is either a digit in @[1, b)@, or another positive number times @b@ plus a digit in @[0, b)@.
+--
+-- For example, @123 = 3 + 10 * (2 + 10 * 1)@:
+--
+-- > BaseDigit (natSingleton :: p 3) (BaseDigit (natSingleton :: p 2) (BaseLead (natSingleton :: p 1))) :: PosBase p 10 123
 data PosBase (p :: Nat -> *) (b :: Nat) (n :: Nat) where
 	BaseLead :: (KnownNat k, 1 + k <= b, k ~ (1 + n)) => p k -> PosBase p b k
 	BaseDigit :: (KnownNat k, 1 + k <= b, KnownNat n) => p k -> PosBase p b n -> PosBase p b (k + b * n)
