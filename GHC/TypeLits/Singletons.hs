@@ -10,6 +10,11 @@
 {-# LANGUAGE Trustworthy #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
+{-# LANGUAGE CPP #-}
+#if __GLASGOW_HASKELL__ >= 805
+{-# LANGUAGE NoStarIsType #-}
+#endif
+
 module GHC.TypeLits.Singletons
 	(
 		-- * Natural number singletons
@@ -29,17 +34,18 @@ module GHC.TypeLits.Singletons
 	)
 	where
 
+import Data.Kind (Type)
 import GHC.TypeLits
 import Data.Type.Equality
 import Unsafe.Coerce
 import Data.Proxy
 
 -- | A class of singletons capable of representing any 'KnownNat' natural number.
-class NatSingleton (p :: Nat -> *) where
+class NatSingleton (p :: Nat -> Type) where
 	natSingleton :: KnownNat n => p n
 
 -- | Auxiliary class for implementing 'Show' on higher-kinded singletons.
-class ShowN (p :: Nat -> *) where showsPrecN :: Int -> p n -> ShowS
+class ShowN (p :: Nat -> Type) where showsPrecN :: Int -> p n -> ShowS
 
 instance ShowN Proxy where showsPrecN = showsPrec
 
@@ -105,7 +111,7 @@ instance NatSingleton NatTwosComp where
 -- For example, @123 = (2 + 1) + 10 * ((1 + 1) + 10 * ((0 + 1) + 10 * 0))@:
 --
 -- > BaseCompxBp1p (natSingleton :: p 2) (BaseCompxBp1p (natSingleton :: p 1) (BaseCompxBp1p (natSingleton :: p 0) BaseCompZero)) :: NatBaseComp p 10 123
-data NatBaseComp (p :: Nat -> *) (b :: Nat) (n :: Nat) where
+data NatBaseComp (p :: Nat -> Type) (b :: Nat) (n :: Nat) where
 	BaseCompZero :: (KnownNat b, b ~ (1 + c)) => NatBaseComp p b 0
 	BaseCompxBp1p :: (KnownNat b, b ~ (1 + c), KnownNat k, 1 + k <= b, KnownNat n) => p k -> NatBaseComp p b n -> NatBaseComp p b (1 + k + b * n)
 instance ShowN p => Show (NatBaseComp p b n) where
@@ -127,7 +133,7 @@ instance (KnownNat b, b ~ (1 + c), NatSingleton p) => NatSingleton (NatBaseComp 
 			base = natVal (Proxy :: Proxy b)
 
 -- | A class of singletons capable of representing postive 'KnownNat' natural numbers.
-class PositiveSingleton (p :: Nat -> *) where
+class PositiveSingleton (p :: Nat -> Type) where
 	posSingleton :: KnownNat n => p (1 + n)
 
 instance PositiveSingleton Proxy where
@@ -180,7 +186,7 @@ instance PositiveSingleton PosBinary where
 -- For example, @123 = 3 + 10 * (2 + 10 * 1)@:
 --
 -- > BaseDigit (natSingleton :: p 3) (BaseDigit (natSingleton :: p 2) (BaseLead (natSingleton :: p 1))) :: PosBase p 10 123
-data PosBase (p :: Nat -> *) (b :: Nat) (n :: Nat) where
+data PosBase (p :: Nat -> Type) (b :: Nat) (n :: Nat) where
 	BaseLead :: (KnownNat k, 1 + k <= b, k ~ (1 + n)) => p k -> PosBase p b k
 	BaseDigit :: (KnownNat k, 1 + k <= b, KnownNat n) => p k -> PosBase p b n -> PosBase p b (k + b * n)
 instance ShowN p => Show (PosBase p b n) where

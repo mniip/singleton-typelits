@@ -35,5 +35,5 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     GHC.TypeLits.Singletons, GHC.TypeLits.Induction
-  build-depends:       base >=4.9 && <4.12
+  build-depends:       base >=4.9 && <4.13
   default-language:    Haskell2010

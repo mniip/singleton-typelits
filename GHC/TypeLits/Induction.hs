@@ -10,6 +10,11 @@
 {-# LANGUAGE Safe #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
+{-# LANGUAGE CPP #-}
+#if __GLASGOW_HASKELL__ >= 805
+{-# LANGUAGE NoStarIsType #-}
+#endif
+
 module GHC.TypeLits.Induction
 	(
 		-- * Natural number induction
